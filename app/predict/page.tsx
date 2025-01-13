@@ -5,9 +5,8 @@ import { Button } from "@nextui-org/button";
 import { Progress } from "@nextui-org/progress";
 import { Image } from "@nextui-org/image";
 import { Chip } from "@nextui-org/chip";
-
 import { subtitle, title } from "@/components/primitives";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { InfoIcon } from "lucide-react";
 
 interface PredictionResponse {
@@ -23,6 +22,7 @@ export default function DocsPage() {
   const [loading, setLoading] = useState(false);
   const [prediction, setPrediction] = useState<PredictionResponse | null>(null);
   const [error, setError] = useState<string>('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     setError('');
@@ -42,6 +42,10 @@ export default function DocsPage() {
       setPreview(e.target?.result as string);
     };
     reader.readAsDataURL(file);
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
   };
 
   const handleSubmit = async () => {
@@ -91,7 +95,6 @@ export default function DocsPage() {
   };
 
   const calculateConfidences = (prediction: number) => {
-    // Convert the prediction to percentages for both cases
     const helmetConfidence = ((1 - prediction) * 100).toFixed(1);
     const noHelmetConfidence = (prediction * 100).toFixed(1);
     return { helmetConfidence, noHelmetConfidence };
@@ -119,6 +122,7 @@ export default function DocsPage() {
 
           <div className="flex flex-col gap-2">
             <input
+              ref={fileInputRef}
               type="file"
               accept="image/*"
               onChange={handleFileSelect}
@@ -126,10 +130,9 @@ export default function DocsPage() {
               id="imageUpload"
             />
             <Button
-              as="label"
-              htmlFor="imageUpload"
+              onClick={triggerFileInput}
               color="primary"
-              className="w-full md:w-auto"
+              className="w-full md:w-auto cursor-pointer"
             >
               Select Image
             </Button>
@@ -183,7 +186,7 @@ export default function DocsPage() {
                       {getHelmetStatus(prediction.prediction)}
                     </Chip>
                   </div>
-                  
+
                   <div className="space-y-4">
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
@@ -221,7 +224,7 @@ export default function DocsPage() {
                       />
                     </div>
                   </div>
-                  
+
                   <p className="text-default-600">
                     Image Size: {prediction.image_width}x{prediction.image_height}px
                   </p>
